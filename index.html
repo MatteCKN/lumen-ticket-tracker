@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticket Tracker · Lumen Festival</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e1117;--surface:#161b27;--surface2:#1e2535;--border:#2a3348;
+  --accent:#4f8ef7;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;
+  --text:#e2e8f0;--muted:#64748b;--radius:10px;--radius-sm:6px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+button{cursor:pointer;font-family:inherit;font-size:.9rem;border:none;outline:none;transition:opacity .15s,transform .1s}
+button:hover{opacity:.85}button:active{transform:scale(.97)}
+input,select{font-family:inherit;font-size:.9rem;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;width:100%;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--accent)}
+select option{background:var(--surface2)}
+label{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px;letter-spacing:.03em;text-transform:uppercase}
+#pin-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:1000;padding:24px}
+#pin-screen.hidden{display:none}
+.pin-logo{font-size:1.4rem;font-weight:700;color:var(--accent)}
+.pin-logo span{color:var(--muted);font-weight:400}
+.pin-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:360px;width:100%;display:flex;flex-direction:column;gap:16px}
+.pin-box h2{font-size:1.1rem;text-align:center}
+.pin-box p{font-size:.82rem;color:var(--muted);text-align:center}
+#pin-input{text-align:center;font-size:1.5rem;letter-spacing:.3em}
+#app{display:none;flex-direction:column;min-height:100vh}
+#app.visible{display:flex}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:12px 20px;position:sticky;top:0;z-index:100;flex-wrap:wrap}
+.topbar-logo{font-size:1.1rem;font-weight:700}
+.nav-tabs{display:flex;gap:4px;flex:1;overflow-x:auto}
+.nav-tab{padding:6px 14px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:500;background:transparent;color:var(--muted);white-space:nowrap}
+.nav-tab.active{background:var(--surface2);color:var(--text)}
+.topbar-actions{display:flex;gap:8px;margin-left:auto}
+.main{flex:1;padding:20px;max-width:1200px;width:100%;margin:0 auto}
+.section{display:none;flex-direction:column;gap:20px}
+.section.active{display:flex}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card-title{font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:14px;font-weight:600}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.kpi-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.kpi-value{font-size:1.6rem;font-weight:700;line-height:1}
+.kpi-sub{font-size:.75rem;color:var(--muted);margin-top:4px}
+.filters{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:140px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{text-align:left;padding:8px 12px;background:var(--surface2);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:10px 12px;vertical-align:middle}
+tbody tr:hover{background:var(--surface2)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge-g{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-r{background:rgba(239,68,68,.15);color:var(--red)}
+.pb-outer{background:var(--surface2);border-radius:99px;height:7px;overflow:hidden;margin:5px 0}
+.pb-inner{height:100%;border-radius:99px;transition:width .4s}
+.pb-labels{font-size:.75rem;color:var(--muted);display:flex;justify-content:space-between}
+.chart-container{position:relative;height:320px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.readings-list{display:flex;flex-direction:column;gap:8px;max-height:500px;overflow-y:auto}
+.ri{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:var(--radius-sm);padding:10px 14px;font-size:.85rem}
+.ri-main{flex:1}.ri-cat{font-weight:600}.ri-meta{color:var(--muted);font-size:.78rem}
+.ri-val{font-weight:700;font-size:1rem;white-space:nowrap}
+.ri-actions{display:flex;gap:6px}
+.cat-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.cat-item:last-child{border-bottom:none}
+.cat-name{flex:1;font-weight:500}.cat-target{color:var(--muted);font-size:.82rem}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.toggle-group{display:flex;flex-wrap:wrap;gap:8px}
+.toggle-btn{padding:5px 12px;border-radius:20px;font-size:.82rem;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:16px}
+.modal h3{font-size:1rem}.modal p{font-size:.88rem;color:var(--muted)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.toast-container{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:999}
+.toast{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 18px;font-size:.85rem;max-width:300px;animation:slideIn .2s ease}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.warn{border-left:3px solid var(--yellow)}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+.btn-primary{background:var(--accent);color:#fff;border-radius:var(--radius-sm);padding:10px 20px;font-weight:600}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px}
+.btn-danger{background:var(--red);color:#fff;border-radius:var(--radius-sm);padding:8px 16px;font-weight:600}
+.btn-sm{padding:5px 10px;font-size:.78rem}
+.fw-600{font-weight:600}.text-muted{color:var(--muted)}.text-green{color:var(--green)}.text-red{color:var(--red)}.text-sm{font-size:.82rem}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+@media(max-width:600px){.kpi-value{font-size:1.2rem}.chart-container{height:240px}.main{padding:12px}}
+</style>
+</head>
+<body>
+
+<div id="pin-screen">
+  <div class="pin-logo">🎪 ticket<span>tracker</span></div>
+  <div class="pin-box">
+    <h2>🔒 Accesso richiesto</h2>
+    <p>Inserisci il PIN per continuare</p>
+    <input type="password" id="pin-input" placeholder="····" maxlength="20" autocomplete="off">
+    <div id="pin-error" style="color:var(--red);font-size:.82rem;text-align:center;min-height:18px"></div>
+    <button class="btn-primary" onclick="checkPin()">Entra</button>
+    <p style="font-size:.72rem;margin-top:-4px">PIN default: <strong>2025</strong> · modificabile nelle Impostazioni</p>
+  </div>
+</div>
+
+<div id="app">
+  <nav class="topbar">
+    <span class="topbar-logo">🎪 Lumen</span>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
+      <button class="nav-tab" onclick="switchTab('add')">+ Rilevazione</button>
+      <button class="nav-tab" onclick="switchTab('history')">Storico</button>
+      <button class="nav-tab" onclick="switchTab('settings')">Impostazioni</button>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost btn-sm" onclick="exportData()">⬇ Export</button>
+      <button class="btn-ghost btn-sm" onclick="triggerImport()">⬆ Import</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </nav>
+  <div class="main">
+
+    <section id="tab-dashboard" class="section active">
+      <div class="kpi-row" id="kpi-row"></div>
+      <div class="card">
+        <div class="card-title">Filtri</div>
+        <div class="filters">
+          <div class="field">
+            <label>Periodo</label>
+            <select id="filter-range" onchange="renderDashboard()">
+              <option value="all">Tutto</option>
+              <option value="90" selected>Ultimi 90 giorni</option>
+              <option value="180">Ultimi 180 giorni</option>
+              <option value="custom">Personalizzato</option>
+            </select>
+          </div>
+          <div class="field" id="cf-from" style="display:none">
+            <label>Dal</label><input type="date" id="filter-from" oninput="renderDashboard()">
+          </div>
+          <div class="field" id="cf-to" style="display:none">
+            <label>Al</label><input type="date" id="filter-to" oninput="renderDashboard()">
+          </div>
+          <div class="field" style="min-width:200px">
+            <label>Categorie nel grafico</label>
+            <div class="toggle-group" id="cat-toggles"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Andamento vendite</div>
+        <div class="chart-container"><canvas id="mainChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Settimana su settimana</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Categoria</th><th>Ultima rilevazione</th><th>Totale</th>
+              <th>Δ vs prec.</th><th>Δ %</th><th>Media/giorno</th>
+              <th>Obiettivo</th><th>Trend arrivo</th>
+            </tr></thead>
+            <tbody id="wow-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" id="progress-card" style="display:none">
+        <div class="card-title">Progresso verso obiettivo</div>
+        <div id="progress-list"></div>
+      </div>
+    </section>
+
+    <section id="tab-add" class="section">
+      <div class="card">
+        <div class="card-title">Nuova rilevazione</div>
+        <div class="form-grid">
+          <div class="form-field"><label>Data rilevazione</label><input type="date" id="new-date"></div>
+          <div class="form-field"><label>Categoria</label><select id="new-cat" onchange="updateAddPreview()"></select></div>
+          <div class="form-field"><label>Biglietti venduti (cumulativo)</label><input type="number" id="new-total" min="0" placeholder="es. 320"></div>
+          <div class="form-field"><label>Nota (opzionale)</label><input type="text" id="new-note" placeholder="es. post-annuncio artista"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button class="btn-primary" onclick="addReading()">Aggiungi rilevazione</button>
+        </div>
+      </div>
+      <div class="card" id="add-preview-card" style="display:none">
+        <div class="card-title">Ultima rilevazione per questa categoria</div>
+        <div id="add-preview"></div>
+      </div>
+    </section>
+
+    <section id="tab-history" class="section">
+      <div class="card">
+        <div class="card-title">Tutte le rilevazioni</div>
+        <div class="filters" style="margin-bottom:14px">
+          <div class="field">
+            <label>Categoria</label>
+            <select id="hist-cat-filter" onchange="renderHistory()"><option value="all">Tutte</option></select>
+          </div>
+          <div class="field">
+            <label>Ordina</label>
+            <select id="hist-sort" onchange="renderHistory()">
+              <option value="date-desc">Data (più recente)</option>
+              <option value="date-asc">Data (più vecchia)</option>
+            </select>
+          </div>
+        </div>
+        <div class="readings-list" id="readings-list"></div>
+      </div>
+    </section>
+
+    <section id="tab-settings" class="section">
+      <div class="settings-grid">
+        <div class="card">
+          <div class="card-title">Festival</div>
+          <div class="form-field" style="margin-bottom:12px"><label>Nome festival</label><input type="text" id="sett-name"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            <div class="form-field"><label>Data inizio</label><input type="date" id="sett-start"></div>
+            <div class="form-field"><label>Data fine</label><input type="date" id="sett-end"></div>
+          </div>
+          <button class="btn-primary" onclick="saveFestivalSettings()">Salva</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Categorie / Giorni</div>
+          <div id="cat-list" style="margin-bottom:14px"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div class="form-field"><label>Nome categoria</label><input type="text" id="new-cat-name" placeholder="es. Day 1"></div>
+            <div class="form-field"><label>Obiettivo biglietti</label><input type="number" id="new-cat-target" min="0" placeholder="es. 500"></div>
+          </div>
+          <button class="btn-primary" onclick="addCategory()">Aggiungi categoria</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Sicurezza – Cambia PIN</div>
+          <div class="form-field" style="margin-bottom:10px"><label>PIN attuale</label><input type="password" id="sett-old-pin"></div>
+          <div class="form-field" style="margin-bottom:10px"><label>Nuovo PIN</label><input type="password" id="sett-new-pin"></div>
+          <div class="form-field" style="margin-bottom:14px"><label>Conferma</label><input type="password" id="sett-new-pin2"></div>
+          <button class="btn-primary" onclick="changePin()">Aggiorna PIN</button>
+        </div>
+        <div class="card">
+          <div class="card-title">⚠️ Danger zone</div>
+          <p class="text-sm text-muted" style="margin-bottom:14px">Senza backup non puoi recuperare i dati.</p>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button class="btn-ghost" onclick="exportData()">⬇ Esporta JSON (backup)</button>
+            <button class="btn-danger" onclick="confirmReset()">🗑 Reset completo dati</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <p id="modal-body"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Annulla</button>
+      <button class="btn-danger" id="modal-confirm-btn">Conferma</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="edit-overlay">
+  <div class="modal">
+    <h3>Modifica rilevazione</h3>
+    <input type="hidden" id="edit-id">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr">
+      <div class="form-field"><label>Data</label><input type="date" id="edit-date"></div>
+      <div class="form-field"><label>Totale biglietti</label><input type="number" id="edit-total" min="0"></div>
+    </div>
+    <div class="form-field" style="margin-top:10px"><label>Nota</label><input type="text" id="edit-note"></div>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="btn-ghost" onclick="closeEditModal()">Annulla</button>
+      <button class="btn-primary" onclick="saveEdit()">Salva modifiche</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+const SK='ticketTracker_v2';
+const CC=['#4f8ef7','#7c3aed','#22c55e','#f59e0b','#ef4444','#06b6d4','#f97316','#a855f7'];
+let ST=null,chartObj=null,pendingAction=null;
+
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+const fmt=d=>new Date(d).toISOString().slice(0,10);
+const disp=s=>{if(!s)return'–';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`};
+const diffD=(a,b)=>Math.round((new Date(b)-new Date(a))/86400000);
+
+function buildDefault(){
+  const fid=uid();
+  const cats=[
+    {id:uid(),fid,name:'Day 1 – Ven 20 Giu',target:800},
+    {id:uid(),fid,name:'Day 2 – Sab 21 Giu',target:1000},
+    {id:uid(),fid,name:'Day 3 – Dom 22 Giu',target:800},
+    {id:uid(),fid,name:'Abbonamento 3 Giorni',target:400},
+  ];
+  const ramp=[[18,42,75,125,188,260,345,448],[25,65,115,182,268,362,475,585],[10,25,52,95,148,208,278,355],[12,30,55,90,128,162,200,245]];
+  const readings=[];const today=new Date();
+  cats.forEach((c,ci)=>{
+    for(let w=0;w<8;w++){
+      const d=new Date(today);d.setDate(d.getDate()-(7-w)*7);
+      readings.push({id:uid(),fid,catId:c.id,date:fmt(d),total:ramp[ci][w],note:w===0?'prima rilevazione':''});
+    }
+  });
+  return{pin:'2025',festivals:[{id:fid,name:'Lumen Festival 2025',dateStart:'2025-06-20',dateEnd:'2025-06-22'}],categories:cats,readings};
+}
+
+function load(){const r=localStorage.getItem(SK);ST=r?JSON.parse(r):buildDefault();}
+function save(){localStorage.setItem(SK,JSON.stringify(ST));}
+
+function checkPin(){
+  const v=document.getElementById('pin-input').value;
+  if(v===ST.pin){
+    document.getElementById('pin-screen').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
+    initApp();
+  }else{
+    document.getElementById('pin-error').textContent='PIN errato.';
+    document.getElementById('pin-input').value='';
+    setTimeout(()=>document.getElementById('pin-error').textContent='',2000);
+  }
+}
+document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkPin();});
+
+function initApp(){
+  document.getElementById('new-date').value=fmt(new Date());
+  renderSettingsForm();populateCatSelects();renderDashboard();renderHistory();
+}
+
+function switchTab(n){
+  const names=['dashboard','add','history','settings'];
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+n).classList.add('active');
+  document.querySelectorAll('.nav-tab')[names.indexOf(n)].classList.add('active');
+  if(n==='dashboard')renderDashboard();
+  if(n==='history')renderHistory();
+  if(n==='settings')renderSettingsForm();
+}
+
+function getFilteredReadings(){
+  const rv=document.getElementById('filter-range').value;
+  let from=null,to=null;
+  if(rv==='custom'){from=document.getElementById('filter-from').value;to=document.getElementById('filter-to').value;}
+  else if(rv!=='all'){const d=new Date();d.setDate(d.getDate()-parseInt(rv));from=fmt(d);}
+  return ST.readings.filter(r=>(!from||r.date>=from)&&(!to||r.date<=to));
+}
+
+function getLastTwo(catId,readings){
+  const rs=readings.filter(r=>r.catId===catId).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!rs.length)return[null,null];
+  return[rs[rs.length-1],rs.length>1?rs[rs.length-2]:null];
+}
+
+function trendDate(catId,target){
+  const rs=ST.readings.filter(r=>r.catId===catId).sort((a,b)=>a.date.localeCompare(b.date));
+  if(rs.length<2)return null;
+  const last=rs.slice(-Math.min(3,rs.length));
+  const days=diffD(last[0].date,last[last.length-1].date);
+  if(days<=0)return null;
+  const vel=(last[last.length-1].total-last[0].total)/days;
+  if(vel<=0)return null;
+  const rem=target-last[last.length-1].total;
+  if(rem<=0)return'raggiunto';
+  const proj=new Date(last[last.length-1].date);
+  proj.setDate(proj.getDate()+Math.ceil(rem/vel));
+  return disp(fmt(proj));
+}
+
+function renderDashboard(){
+  const rv=document.getElementById('filter-range').value;
+  document.getElementById('cf-from').style.display=rv==='custom'?'':'none';
+  document.getElementById('cf-to').style.display=rv==='custom'?'':'none';
+  const readings=getFilteredReadings();
+  const cats=ST.categories;
+  const activeIds=new Set();
+  document.querySelectorAll('.toggle-btn.on').forEach(b=>activeIds.add(b.dataset.id));
+  if(!activeIds.size)cats.forEach(c=>activeIds.add(c.id));
+  document.getElementById('cat-toggles').innerHTML=cats.map((c,i)=>{
+    const on=activeIds.has(c.id);
+    return`<button class="toggle-btn ${on?'on':''}" data-id="${c.id}"
+      style="${on?`background:${CC[i%8]};border-color:${CC[i%8]};color:#fff`:''}"
+      onclick="toggleCat('${c.id}',this,${i})">${c.name}</button>`;
+  }).join('');
+  let tNow=0,tDelta=0;
+  document.getElementById('wow-tbody').innerHTML=cats.map((c,i)=>{
+    const[lat,prv]=getLastTwo(c.id,readings);
+    if(!lat)return`<tr><td><div style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:${CC[i%8]}"></span>${c.name}</div></td><td colspan="7" class="text-muted text-sm">Nessuna rilevazione nel periodo</td></tr>`;
+    const delta=prv?lat.total-prv.total:null;
+    const dpct=(prv&&prv.total>0)?delta/prv.total*100:null;
+    const dd=prv?diffD(prv.date,lat.date):null;
+    const avgd=(dd&&dd>0&&delta!==null)?(delta/dd).toFixed(1):'–';
+    tNow+=lat.total;if(delta!==null)tDelta+=delta;
+    const td=c.target?trendDate(c.id,c.target):null;
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:${CC[i%8]}"></span>${c.name}</div></td>
+      <td>${disp(lat.date)}</td>
+      <td class="fw-600">${lat.total.toLocaleString('it-IT')}</td>
+      <td>${delta!==null?`<span class="badge ${delta>=0?'badge-g':'badge-r'}">${delta>=0?'+':''}${delta}</span>`:'–'}</td>
+      <td style="color:${dpct!==null?(dpct>=0?'var(--green)':'var(--red)'):'inherit'};font-weight:600">${dpct!==null?(dpct>=0?'+':'')+dpct.toFixed(1)+'%':'–'}</td>
+      <td class="text-sm">${avgd!=='–'?avgd+'/g':'–'}</td>
+      <td class="text-sm">${c.target?lat.total+'/'+c.target:'–'}</td>
+      <td class="text-sm">${td?(td==='raggiunto'?'<span class="badge badge-g">✓</span>':td):'–'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('kpi-row').innerHTML=`
+    <div class="kpi-card"><div class="kpi-label">Totale biglietti</div><div class="kpi-value">${tNow.toLocaleString('it-IT')}</div><div class="kpi-sub">Somma ultime rilevazioni</div></div>
+    <div class="kpi-card"><div class="kpi-label">Crescita vs precedente</div><div class="kpi-value" style="color:${tDelta>=0?'var(--green)':'var(--red)'}">${tDelta>=0?'+':''}${tDelta.toLocaleString('it-IT')}</div><div class="kpi-sub">Delta assoluto</div></div>
+    <div class="kpi-card"><div class="kpi-label">Categorie</div><div class="kpi-value">${cats.length}</div><div class="kpi-sub">In questo festival</div></div>
+    <div class="kpi-card"><div class="kpi-label">Rilevazioni totali</div><div class="kpi-value">${ST.readings.length}</div><div class="kpi-sub">Storico completo</div></div>`;
+  const progItems=cats.filter(c=>c.target>0).map((c,i)=>{
+    const[lat]=getLastTwo(c.id,readings);const cur=lat?lat.total:0;
+    const pct=Math.min(100,Math.round(cur/c.target*100));
+    const td=trendDate(c.id,c.target);
+    return`<div style="margin-bottom:16px">
+      <div class="pb-labels"><span style="color:${CC[i%8]};font-weight:600">${c.name}</span>
+      <span>${cur} / ${c.target} · ${pct}%${td&&td!=='raggiunto'?' · Trend: '+td:td==='raggiunto'?' · ✓ Raggiunto':''}</span></div>
+      <div class="pb-outer"><div class="pb-inner" style="width:${pct}%;background:${CC[i%8]}"></div></div>
+    </div>`;
+  });
+  const pc=document.getElementById('progress-card');
+  pc.style.display=progItems.length?'':'none';
+  document.getElementById('progress-list').innerHTML=progItems.join('');
+  renderChart(readings,activeIds);
+}
+
+function toggleCat(id,btn,ci){
+  btn.classList.toggle('on');const on=btn.classList.contains('on');
+  btn.style.background=on?CC[ci%8]:'';btn.style.borderColor=on?CC[ci%8]:'';btn.style.color=on?'#fff':'';
+  const active=new Set();
+  document.querySelectorAll('.toggle-btn.on').forEach(b=>active.add(b.dataset.id));
+  renderChart(getFilteredReadings(),active);
+}
+
+function renderChart(readings,activeIds){
+  const allDates=new Set();
+  ST.categories.forEach(c=>{if(!activeIds.has(c.id))return;readings.filter(r=>r.catId===c.id).forEach(r=>allDates.add(r.date));});
+  const labels=[...allDates].sort();
+  const datasets=ST.categories.filter(c=>activeIds.has(c.id)).map((c,i)=>{
+    const map={};readings.filter(r=>r.catId===c.id).forEach(r=>map[r.date]=r.total);
+    return{label:c.name,data:labels.map(d=>map[d]!==undefined?map[d]:null),
+      borderColor:CC[i%8],backgroundColor:CC[i%8]+'20',fill:false,tension:.35,
+      spanGaps:false,pointRadius:4,pointHoverRadius:6,borderWidth:2};
+  });
+  if(chartObj)chartObj.destroy();
+  chartObj=new Chart(document.getElementById('mainChart').getContext('2d'),{
+    type:'line',data:{labels:labels.map(disp),datasets},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:'#94a3b8',font:{size:12},padding:16}},
+        tooltip:{backgroundColor:'#1e2535',borderColor:'#2a3348',borderWidth:1,titleColor:'#e2e8f0',bodyColor:'#94a3b8'}},
+      scales:{x:{grid:{color:'#2a3348'},ticks:{color:'#64748b',maxRotation:45}},
+        y:{grid:{color:'#2a3348'},ticks:{color:'#64748b'},beginAtZero:true}}}
+  });
+}
+
+function populateCatSelects(){
+  document.getElementById('new-cat').innerHTML=ST.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('hist-cat-filter').innerHTML='<option value="all">Tutte</option>'+ST.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  updateAddPreview();
+}
+
+function updateAddPreview(){
+  const cid=document.getElementById('new-cat').value;
+  const card=document.getElementById('add-preview-card');
+  if(!cid){card.style.display='none';return;}
+  const rs=ST.readings.filter(r=>r.catId===cid).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!rs.length){card.style.display='none';return;}
+  card.style.display='';
+  const last=rs[rs.length-1];const ci=ST.categories.findIndex(c=>c.id===cid);
+  document.getElementById('add-preview').innerHTML=`
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><div class="kpi-label">Ultima data</div><div class="fw-600" style="color:${CC[ci%8]}">${disp(last.date)}</div></div>
+      <div><div class="kpi-label">Totale cumulativo</div><div class="fw-600">${last.total.toLocaleString('it-IT')}</div></div>
+      ${last.note?`<div><div class="kpi-label">Nota</div><div class="text-sm">${last.note}</div></div>`:''}
+    </div>`;
+}
+
+function addReading(){
+  const date=document.getElementById('new-date').value;
+  const catId=document.getElementById('new-cat').value;
+  const tv=document.getElementById('new-total').value;
+  const note=document.getElementById('new-note').value.trim();
+  if(!date){toast('Inserisci una data','error');return;}
+  if(!catId){toast('Seleziona una categoria','error');return;}
+  if(tv===''){toast('Inserisci il numero di biglietti','error');return;}
+  const total=parseInt(tv);
+  if(isNaN(total)||total<0){toast('Valore non valido (≥ 0)','error');return;}
+  const last=ST.readings.filter(r=>r.catId===catId).sort((a,b)=>a.date.localeCompare(b.date)).slice(-1)[0];
+  const doAdd=()=>{
+    ST.readings.push({id:uid(),fid:ST.festivals[0]?.id||'',catId,date,total,note});
+    save();document.getElementById('new-total').value='';document.getElementById('new-note').value='';
+    toast('Rilevazione aggiunta ✓','success');updateAddPreview();renderDashboard();
+  };
+  if(last&&total<last.total){
+    openModal('⚠️ Valore inferiore al precedente',`Ultimo valore: ${last.total} (${disp(last.date)}). Stai inserendo ${total}. Procedere?`,doAdd,'Sì, inserisci');
+  }else doAdd();
+}
+
+function renderHistory(){
+  const cf=document.getElementById('hist-cat-filter').value;
+  const so=document.getElementById('hist-sort').value;
+  let rs=[...ST.readings];
+  if(cf!=='all')rs=rs.filter(r=>r.catId===cf);
+  rs.sort((a,b)=>so==='date-desc'?b.date.localeCompare(a.date):a.date.localeCompare(b.date));
+  const list=document.getElementById('readings-list');
+  if(!rs.length){list.innerHTML='<p class="text-muted text-sm" style="padding:12px">Nessuna rilevazione.</p>';return;}
+  list.innerHTML=rs.map(r=>{
+    const cat=ST.categories.find(c=>c.id===r.catId);const ci=ST.categories.indexOf(cat);
+    return`<div class="ri">
+      <div class="ri-main">
+        <div class="ri-cat" style="color:${CC[ci%8]}">${cat?cat.name:'Categoria eliminata'}</div>
+        <div class="ri-meta">${disp(r.date)}${r.note?' · '+r.note:''}</div>
+      </div>
+      <div class="ri-val">${r.total.toLocaleString('it-IT')}</div>
+      <div class="ri-actions">
+        <button class="btn-ghost btn-sm" onclick="openEditModal('${r.id}')">✏️</button>
+        <button class="btn-danger btn-sm" onclick="confirmDelete('${r.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEditModal(id){
+  const r=ST.readings.find(r=>r.id===id);if(!r)return;
+  document.getElementById('edit-id').value=r.id;
+  document.getElementById('edit-date').value=r.date;
+  document.getElementById('edit-total').value=r.total;
+  document.getElementById('edit-note').value=r.note||'';
+  document.getElementById('edit-overlay').classList.remove('hidden');
+}
+function closeEditModal(){document.getElementById('edit-overlay').classList.add('hidden');}
+function saveEdit(){
+  const id=document.getElementById('edit-id').value;
+  const date=document.getElementById('edit-date').value;
+  const total=parseInt(document.getElementById('edit-total').value);
+  const note=document.getElementById('edit-note').value.trim();
+  if(!date||isNaN(total)||total<0){toast('Dati non validi','error');return;}
+  const r=ST.readings.find(r=>r.id===id);if(!r)return;
+  r.date=date;r.total=total;r.note=note;
+  save();closeEditModal();toast('Aggiornato ✓','success');renderHistory();renderDashboard();
+}
+function confirmDelete(id){
+  openModal('Elimina rilevazione','Sicuro? Azione non reversibile.',()=>{
+    ST.readings=ST.readings.filter(r=>r.id!==id);
+    save();toast('Eliminata','success');renderHistory();renderDashboard();
+  },'Elimina');
+}
+
+function renderSettingsForm(){
+  const f=ST.festivals[0];
+  if(f){document.getElementById('sett-name').value=f.name;document.getElementById('sett-start').value=f.dateStart||'';document.getElementById('sett-end').value=f.dateEnd||'';}
+  document.getElementById('cat-list').innerHTML=ST.categories.map((c,i)=>`
+    <div class="cat-item">
+      <span class="dot" style="background:${CC[i%8]}"></span>
+      <span class="cat-name">${c.name}</span>
+      <span class="cat-target">${c.target?'🎯 '+c.target:'no target'}</span>
+      <button class="btn-ghost btn-sm" onclick="editCatTarget('${c.id}')">✏️</button>
+      <button class="btn-danger btn-sm" onclick="confirmDeleteCat('${c.id}')">🗑</button>
+    </div>`).join('')||'<p class="text-muted text-sm">Nessuna categoria.</p>';
+}
+function saveFestivalSettings(){
+  const name=document.getElementById('sett-name').value.trim();
+  if(!name){toast('Inserisci il nome','error');return;}
+  if(!ST.festivals.length)ST.festivals.push({id:uid()});
+  ST.festivals[0].name=name;ST.festivals[0].dateStart=document.getElementById('sett-start').value;ST.festivals[0].dateEnd=document.getElementById('sett-end').value;
+  save();toast('Salvato ✓','success');
+}
+function addCategory(){
+  const name=document.getElementById('new-cat-name').value.trim();
+  const target=parseInt(document.getElementById('new-cat-target').value)||0;
+  if(!name){toast('Inserisci il nome','error');return;}
+  ST.categories.push({id:uid(),fid:ST.festivals[0]?.id||'',name,target});
+  save();document.getElementById('new-cat-name').value='';document.getElementById('new-cat-target').value='';
+  renderSettingsForm();populateCatSelects();toast('Categoria aggiunta ✓','success');
+}
+function editCatTarget(id){
+  const c=ST.categories.find(c=>c.id===id);if(!c)return;
+  const v=prompt(`Obiettivo per "${c.name}":`,c.target||'');
+  if(v===null)return;c.target=parseInt(v)||0;save();
+  renderSettingsForm();renderDashboard();toast('Obiettivo aggiornato ✓','success');
+}
+function confirmDeleteCat(id){
+  const c=ST.categories.find(c=>c.id===id);
+  const n=ST.readings.filter(r=>r.catId===id).length;
+  openModal('Elimina categoria',`Eliminare "${c?.name}"? Anche ${n} rilevazioni verranno rimosse.`,()=>{
+    ST.categories=ST.categories.filter(c=>c.id!==id);
+    ST.readings=ST.readings.filter(r=>r.catId!==id);
+    save();renderSettingsForm();populateCatSelects();renderDashboard();renderHistory();toast('Eliminata','success');
+  },'Elimina');
+}
+function changePin(){
+  const old=document.getElementById('sett-old-pin').value;
+  const n1=document.getElementById('sett-new-pin').value;
+  const n2=document.getElementById('sett-new-pin2').value;
+  if(old!==ST.pin){toast('PIN attuale errato','error');return;}
+  if(!n1){toast('Inserisci nuovo PIN','error');return;}
+  if(n1!==n2){toast('PIN non coincidono','error');return;}
+  ST.pin=n1;save();
+  document.getElementById('sett-old-pin').value='';document.getElementById('sett-new-pin').value='';document.getElementById('sett-new-pin2').value='';
+  toast('PIN aggiornato ✓','success');
+}
+function confirmReset(){
+  openModal('⚠️ Reset completo','Tutti i dati verranno eliminati. Esporta prima un backup.',()=>{
+    localStorage.removeItem(SK);toast('Reset eseguito. Ricarico...','warn');setTimeout(()=>location.reload(),1500);
+  },'Sì, elimina tutto');
+}
+
+function exportData(){
+  const name=(ST.festivals[0]?.name||'data').replace(/\s+/g,'_');
+  const blob=new Blob([JSON.stringify(ST,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`tickettracker_${name}_${fmt(new Date())}.json`;a.click();URL.revokeObjectURL(a.href);
+  toast('Export completato ✓','success');
+}
+function triggerImport(){document.getElementById('import-file').click();}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const imp=JSON.parse(ev.target.result);
+      if(!imp.readings||!imp.categories)throw new Error();
+      openModal('Importa dati',`Importare "${file.name}"? I dati attuali saranno sostituiti.`,()=>{
+        ST=imp;save();toast('Importato ✓','success');
+        renderSettingsForm();populateCatSelects();renderDashboard();renderHistory();
+      },'Importa');
+    }catch{toast('JSON non valido','error');}
+  };
+  reader.readAsText(file);e.target.value='';
+}
+
+function openModal(title,body,cb,lbl='Conferma'){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').textContent=body;
+  document.getElementById('modal-confirm-btn').textContent=lbl;
+  pendingAction=cb;document.getElementById('modal-overlay').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.add('hidden');pendingAction=null;}
+document.getElementById('modal-confirm-btn').addEventListener('click',()=>{if(pendingAction)pendingAction();closeModal();});
+document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.getElementById('edit-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeEditModal();});
+
+function toast(msg,type='success'){
+  const c=document.getElementById('toasts');const el=document.createElement('div');
+  el.className=`toast ${type}`;el.textContent=msg;c.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3000);
+}
+
+load();
+</script>
+</body>
+</html>
