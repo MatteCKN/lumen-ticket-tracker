@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎟️</text></svg>">
 <title>Ticket Tracker · Lumen Festival</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎟️</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -23,7 +23,6 @@ label{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px;letter-
 #pin-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:1000;padding:24px}
 #pin-screen.hidden{display:none}
 .pin-logo{font-size:1.4rem;font-weight:700;color:var(--accent)}
-.pin-logo span{color:var(--muted);font-weight:400}
 .pin-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:360px;width:100%;display:flex;flex-direction:column;gap:16px}
 .pin-box h2{font-size:1.1rem;text-align:center}
 .pin-box p{font-size:.82rem;color:var(--muted);text-align:center}
@@ -55,6 +54,8 @@ tbody tr{border-bottom:1px solid var(--border)}
 tbody tr:last-child{border-bottom:none}
 tbody td{padding:10px 12px;vertical-align:middle}
 tbody tr:hover{background:var(--surface2)}
+.tr-group-header td{background:var(--surface2);color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;padding:6px 12px;font-weight:600}
+.tr-seller td{padding:7px 12px 7px 28px;font-size:.82rem;border-bottom:1px solid var(--border);opacity:.85}
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:600}
 .badge-g{background:rgba(34,197,94,.15);color:var(--green)}
 .badge-r{background:rgba(239,68,68,.15);color:var(--red)}
@@ -69,49 +70,58 @@ tbody tr:hover{background:var(--surface2)}
 .ri-main{flex:1}.ri-cat{font-weight:600}.ri-meta{color:var(--muted);font-size:.78rem}
 .ri-val{font-weight:700;font-size:1rem;white-space:nowrap}
 .ri-actions{display:flex;gap:6px}
-.cat-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
-.cat-item:last-child{border-bottom:none}
-.cat-name{flex:1;font-weight:500}.cat-target{color:var(--muted);font-size:.82rem}
+.cat-item{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;margin-bottom:10px}
+.cat-item-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.cat-name{flex:1;font-weight:600}
+.cat-target{color:var(--muted);font-size:.82rem}
+.sellers-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.seller-row{display:flex;align-items:center;gap:8px;font-size:.82rem}
+.seller-name{flex:1;color:var(--text)}
 .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;margin-left:4px}
+.tag-day{background:rgba(79,142,247,.15);color:var(--accent)}
+.tag-abb{background:rgba(124,58,237,.15);color:#a78bfa}
 .toggle-group{display:flex;flex-wrap:wrap;gap:8px}
 .toggle-btn{padding:5px 12px;border-radius:20px;font-size:.82rem;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
 .modal-overlay.hidden{display:none}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:16px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:480px;width:100%;display:flex;flex-direction:column;gap:16px}
 .modal h3{font-size:1rem}.modal p{font-size:.88rem;color:var(--muted)}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end}
 .toast-container{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:999}
 .toast{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 18px;font-size:.85rem;max-width:300px;animation:slideIn .2s ease}
-.toast.success{border-left:3px solid var(--green)}
-.toast.error{border-left:3px solid var(--red)}
-.toast.warn{border-left:3px solid var(--yellow)}
+.toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}.toast.warn{border-left:3px solid var(--yellow)}
 @keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
 .btn-primary{background:var(--accent);color:#fff;border-radius:var(--radius-sm);padding:10px 20px;font-weight:600}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px}
 .btn-danger{background:var(--red);color:#fff;border-radius:var(--radius-sm);padding:8px 16px;font-weight:600}
 .btn-sm{padding:5px 10px;font-size:.78rem}
 .fw-600{font-weight:600}.text-muted{color:var(--muted)}.text-green{color:var(--green)}.text-red{color:var(--red)}.text-sm{font-size:.82rem}
-.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+.radio-group{display:flex;gap:16px}
+.radio-group label{display:flex;align-items:center;gap:6px;text-transform:none;font-size:.85rem;color:var(--text);cursor:pointer}
+.radio-group input[type=radio]{width:auto;padding:0}
 @media(max-width:600px){.kpi-value{font-size:1.2rem}.chart-container{height:240px}.main{padding:12px}}
 </style>
 </head>
 <body>
 
 <div id="pin-screen">
-  <div class="pin-logo">🎪 ticket<span>tracker</span></div>
+  <div class="pin-logo">🎟️ tickettracker</div>
   <div class="pin-box">
     <h2>🔒 Accesso richiesto</h2>
     <p>Inserisci il PIN per continuare</p>
     <input type="password" id="pin-input" placeholder="····" maxlength="20" autocomplete="off">
     <div id="pin-error" style="color:var(--red);font-size:.82rem;text-align:center;min-height:18px"></div>
     <button class="btn-primary" onclick="checkPin()">Entra</button>
-    <p style="font-size:.72rem;margin-top:-4px">PIN default: <strong>2025</strong> · modificabile nelle Impostazioni</p>
+    <p style="font-size:.72rem;margin-top:-4px">PIN default: <strong>2025</strong></p>
   </div>
 </div>
 
 <div id="app">
   <nav class="topbar">
-    <span class="topbar-logo">🎪 Lumen</span>
+    <span class="topbar-logo">🎟️ Lumen</span>
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
       <button class="nav-tab" onclick="switchTab('add')">+ Rilevazione</button>
@@ -126,6 +136,7 @@ tbody tr:hover{background:var(--surface2)}
   </nav>
   <div class="main">
 
+    <!-- DASHBOARD -->
     <section id="tab-dashboard" class="section active">
       <div class="kpi-row" id="kpi-row"></div>
       <div class="card">
@@ -156,16 +167,29 @@ tbody tr:hover{background:var(--surface2)}
         <div class="card-title">Andamento vendite</div>
         <div class="chart-container"><canvas id="mainChart"></canvas></div>
       </div>
-      <div class="card">
-        <div class="card-title">Settimana su settimana</div>
+      <div class="card" id="days-card">
+        <div class="card-title">Giorni — Settimana su settimana</div>
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Categoria</th><th>Ultima rilevazione</th><th>Totale</th>
+              <th>Categoria / Biglietteria</th><th>Ultima rilevazione</th><th>Totale</th>
               <th>Δ vs prec.</th><th>Δ %</th><th>Media/giorno</th>
-              <th>Obiettivo</th><th>Trend arrivo</th>
+              <th>Obiettivo</th><th>Trend</th>
             </tr></thead>
-            <tbody id="wow-tbody"></tbody>
+            <tbody id="days-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" id="abb-card" style="display:none">
+        <div class="card-title">Abbonamenti — Settimana su settimana</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Abbonamento / Biglietteria</th><th>Ultima rilevazione</th><th>Totale</th>
+              <th>Δ vs prec.</th><th>Δ %</th><th>Media/giorno</th>
+              <th>Obiettivo</th><th>Trend</th>
+            </tr></thead>
+            <tbody id="abb-tbody"></tbody>
           </table>
         </div>
       </div>
@@ -175,12 +199,16 @@ tbody tr:hover{background:var(--surface2)}
       </div>
     </section>
 
+    <!-- ADD -->
     <section id="tab-add" class="section">
       <div class="card">
         <div class="card-title">Nuova rilevazione</div>
         <div class="form-grid">
           <div class="form-field"><label>Data rilevazione</label><input type="date" id="new-date"></div>
-          <div class="form-field"><label>Categoria</label><select id="new-cat" onchange="updateAddPreview()"></select></div>
+          <div class="form-field"><label>Categoria</label><select id="new-cat" onchange="updateAddForm()"></select></div>
+          <div class="form-field" id="seller-field" style="display:none">
+            <label>Biglietteria</label><select id="new-seller"></select>
+          </div>
           <div class="form-field"><label>Biglietti venduti (cumulativo)</label><input type="number" id="new-total" min="0" placeholder="es. 320"></div>
           <div class="form-field"><label>Nota (opzionale)</label><input type="text" id="new-note" placeholder="es. post-annuncio artista"></div>
         </div>
@@ -189,11 +217,12 @@ tbody tr:hover{background:var(--surface2)}
         </div>
       </div>
       <div class="card" id="add-preview-card" style="display:none">
-        <div class="card-title">Ultima rilevazione per questa categoria</div>
+        <div class="card-title">Ultima rilevazione</div>
         <div id="add-preview"></div>
       </div>
     </section>
 
+    <!-- HISTORY -->
     <section id="tab-history" class="section">
       <div class="card">
         <div class="card-title">Tutte le rilevazioni</div>
@@ -214,6 +243,7 @@ tbody tr:hover{background:var(--surface2)}
       </div>
     </section>
 
+    <!-- SETTINGS -->
     <section id="tab-settings" class="section">
       <div class="settings-grid">
         <div class="card">
@@ -225,15 +255,35 @@ tbody tr:hover{background:var(--surface2)}
           </div>
           <button class="btn-primary" onclick="saveFestivalSettings()">Salva</button>
         </div>
+
         <div class="card">
-          <div class="card-title">Categorie / Giorni</div>
-          <div id="cat-list" style="margin-bottom:14px"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-            <div class="form-field"><label>Nome categoria</label><input type="text" id="new-cat-name" placeholder="es. Day 1"></div>
-            <div class="form-field"><label>Obiettivo biglietti</label><input type="number" id="new-cat-target" min="0" placeholder="es. 500"></div>
+          <div class="card-title">Nuova categoria</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div class="form-field"><label>Nome</label><input type="text" id="new-cat-name" placeholder="es. Day 1"></div>
+            <div class="form-field"><label>Obiettivo biglietti</label><input type="number" id="new-cat-target" min="0" placeholder="es. 800"></div>
           </div>
-          <button class="btn-primary" onclick="addCategory()">Aggiungi categoria</button>
+          <div class="form-field" style="margin-bottom:12px">
+            <label>Tipo</label>
+            <div class="radio-group">
+              <label><input type="radio" name="new-cat-type" value="day" checked> 🎵 Giorno</label>
+              <label><input type="radio" name="new-cat-type" value="abbonamento"> 🎫 Abbonamento</label>
+            </div>
+          </div>
+          <hr class="divider">
+          <div class="card-title" style="margin-bottom:10px">Biglietterie (max 3, opzionale)</div>
+          <div id="new-sellers-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+            <!-- dinamico -->
+          </div>
+          <button class="btn-ghost btn-sm" onclick="addSellerField()" id="add-seller-btn">+ Aggiungi biglietteria</button>
+          <hr class="divider">
+          <button class="btn-primary" style="margin-top:4px" onclick="addCategory()">Aggiungi categoria</button>
         </div>
+
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-title">Categorie esistenti</div>
+          <div id="cat-list"></div>
+        </div>
+
         <div class="card">
           <div class="card-title">Sicurezza – Cambia PIN</div>
           <div class="form-field" style="margin-bottom:10px"><label>PIN attuale</label><input type="password" id="sett-old-pin"></div>
@@ -241,6 +291,7 @@ tbody tr:hover{background:var(--surface2)}
           <div class="form-field" style="margin-bottom:14px"><label>Conferma</label><input type="password" id="sett-new-pin2"></div>
           <button class="btn-primary" onclick="changePin()">Aggiorna PIN</button>
         </div>
+
         <div class="card">
           <div class="card-title">⚠️ Danger zone</div>
           <p class="text-sm text-muted" style="margin-bottom:14px">Senza backup non puoi recuperare i dati.</p>
@@ -255,17 +306,19 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 </div>
 
+<!-- MODAL confirm -->
 <div class="modal-overlay hidden" id="modal-overlay">
   <div class="modal">
     <h3 id="modal-title"></h3>
     <p id="modal-body"></p>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeModal()">Annulla</button>
-      <button class="btn-danger" id="modal-confirm-btn">Conferma</button>
+      <button id="modal-confirm-btn" class="btn-danger">Conferma</button>
     </div>
   </div>
 </div>
 
+<!-- MODAL edit reading -->
 <div class="modal-overlay hidden" id="edit-overlay">
   <div class="modal">
     <h3>Modifica rilevazione</h3>
@@ -282,40 +335,84 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 </div>
 
+<!-- MODAL edit seller -->
+<div class="modal-overlay hidden" id="seller-edit-overlay">
+  <div class="modal">
+    <h3>Gestisci biglietterie</h3>
+    <p id="seller-edit-cat-name" style="font-weight:600;color:var(--text)"></p>
+    <div id="seller-edit-list" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div>
+    <div id="seller-edit-add" style="margin-top:8px">
+      <button class="btn-ghost btn-sm" onclick="addSellerToExisting()">+ Aggiungi biglietteria</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveSellerEdits()">Chiudi</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-container" id="toasts"></div>
 
 <script>
-const SK='ticketTracker_v2';
+/* ── CONFIG ─────────────────────────── */
+const SK='ticketTracker_v3';
 const CC=['#4f8ef7','#7c3aed','#22c55e','#f59e0b','#ef4444','#06b6d4','#f97316','#a855f7'];
-let ST=null,chartObj=null,pendingAction=null;
+let ST=null,chartObj=null,pendingAction=null,editingCatId=null;
 
+/* ── HELPERS ─────────────────────────── */
 const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
 const fmt=d=>new Date(d).toISOString().slice(0,10);
 const disp=s=>{if(!s)return'–';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`};
 const diffD=(a,b)=>Math.round((new Date(b)-new Date(a))/86400000);
 
+/* ── DEFAULT DATA ─────────────────────── */
 function buildDefault(){
   const fid=uid();
   const cats=[
-    {id:uid(),fid,name:'Day 1 – Ven 20 Giu',target:800},
-    {id:uid(),fid,name:'Day 2 – Sab 21 Giu',target:1000},
-    {id:uid(),fid,name:'Day 3 – Dom 22 Giu',target:800},
-    {id:uid(),fid,name:'Abbonamento 3 Giorni',target:400},
+    {id:uid(),fid,name:'Day 1 – Ven 20 Giu',target:800,type:'day',
+     sellers:[{id:uid(),name:'Ticketone'},{id:uid(),name:'Vivaticket'},{id:uid(),name:'Cassa'}]},
+    {id:uid(),fid,name:'Day 2 – Sab 21 Giu',target:1000,type:'day',
+     sellers:[{id:uid(),name:'Ticketone'},{id:uid(),name:'Vivaticket'}]},
+    {id:uid(),fid,name:'Day 3 – Dom 22 Giu',target:800,type:'day',sellers:[]},
+    {id:uid(),fid,name:'Abbonamento 3 Giorni',target:400,type:'abbonamento',
+     sellers:[{id:uid(),name:'Ticketone'},{id:uid(),name:'Cassa'}]},
   ];
+  // sample ramp per category (summed totals for multi-seller cats, distributed internally)
   const ramp=[[18,42,75,125,188,260,345,448],[25,65,115,182,268,362,475,585],[10,25,52,95,148,208,278,355],[12,30,55,90,128,162,200,245]];
+  // seller splits (fractions that sum to 1)
+  const splits=[[.5,.35,.15],[.6,.4],[null],[.7,.3]];
   const readings=[];const today=new Date();
   cats.forEach((c,ci)=>{
     for(let w=0;w<8;w++){
       const d=new Date(today);d.setDate(d.getDate()-(7-w)*7);
-      readings.push({id:uid(),fid,catId:c.id,date:fmt(d),total:ramp[ci][w],note:w===0?'prima rilevazione':''});
+      const dateStr=fmt(d);
+      if(!c.sellers||!c.sellers.length){
+        readings.push({id:uid(),fid,catId:c.id,sellerId:null,date:dateStr,total:ramp[ci][w],note:w===0?'prima rilevazione':''});
+      } else {
+        c.sellers.forEach((s,si)=>{
+          const t=Math.round(ramp[ci][w]*splits[ci][si]);
+          readings.push({id:uid(),fid,catId:c.id,sellerId:s.id,date:dateStr,total:t,note:w===0?'prima rilevazione':''});
+        });
+      }
     }
   });
   return{pin:'2025',festivals:[{id:fid,name:'Lumen Festival 2025',dateStart:'2025-06-20',dateEnd:'2025-06-22'}],categories:cats,readings};
 }
 
-function load(){const r=localStorage.getItem(SK);ST=r?JSON.parse(r):buildDefault();}
+function load(){
+  const r=localStorage.getItem(SK);
+  if(r){
+    ST=JSON.parse(r);
+    // migrate old data: add missing fields
+    ST.categories.forEach(c=>{
+      if(!c.type) c.type='day';
+      if(!c.sellers) c.sellers=[];
+    });
+    ST.readings.forEach(r=>{if(r.sellerId===undefined)r.sellerId=null;});
+  } else ST=buildDefault();
+}
 function save(){localStorage.setItem(SK,JSON.stringify(ST));}
 
+/* ── PIN ─────────────────────────────── */
 function checkPin(){
   const v=document.getElementById('pin-input').value;
   if(v===ST.pin){
@@ -330,11 +427,13 @@ function checkPin(){
 }
 document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkPin();});
 
+/* ── INIT ─────────────────────────────── */
 function initApp(){
   document.getElementById('new-date').value=fmt(new Date());
   renderSettingsForm();populateCatSelects();renderDashboard();renderHistory();
 }
 
+/* ── NAV ─────────────────────────────── */
 function switchTab(n){
   const names=['dashboard','add','history','settings'];
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -346,6 +445,7 @@ function switchTab(n){
   if(n==='settings')renderSettingsForm();
 }
 
+/* ── DATA HELPERS ─────────────────────── */
 function getFilteredReadings(){
   const rv=document.getElementById('filter-range').value;
   let from=null,to=null;
@@ -354,16 +454,53 @@ function getFilteredReadings(){
   return ST.readings.filter(r=>(!from||r.date>=from)&&(!to||r.date<=to));
 }
 
-function getLastTwo(catId,readings){
-  const rs=readings.filter(r=>r.catId===catId).sort((a,b)=>a.date.localeCompare(b.date));
-  if(!rs.length)return[null,null];
-  return[rs[rs.length-1],rs.length>1?rs[rs.length-2]:null];
+// Get stats for a category: handles both single-stream and multi-seller
+function getCatStats(catId, readings){
+  const cat=ST.categories.find(c=>c.id===catId);
+  const hasSellers=cat.sellers&&cat.sellers.length>0;
+
+  if(!hasSellers){
+    const rs=readings.filter(r=>r.catId===catId&&!r.sellerId).sort((a,b)=>a.date.localeCompare(b.date));
+    const lat=rs[rs.length-1]||null;
+    const prv=rs[rs.length-2]||null;
+    return{latestDate:lat?.date||null,latestTotal:lat?.total||0,prevDate:prv?.date||null,prevTotal:prv?.total||0,sellerBreakdown:null};
+  }
+
+  let latestDate=null,latestTotal=0,prevDate=null,prevTotal=0;
+  const sellerBreakdown=[];
+  cat.sellers.forEach(seller=>{
+    const rs=readings.filter(r=>r.catId===catId&&r.sellerId===seller.id).sort((a,b)=>a.date.localeCompare(b.date));
+    const lat=rs[rs.length-1]||null;
+    const prv=rs[rs.length-2]||null;
+    latestTotal+=lat?lat.total:0;
+    prevTotal+=prv?prv.total:0;
+    if(lat&&(!latestDate||lat.date>latestDate))latestDate=lat.date;
+    if(prv&&(!prevDate||prv.date>prevDate))prevDate=prv.date;
+    sellerBreakdown.push({seller,lat,prv});
+  });
+  return{latestDate,latestTotal,prevDate,prevTotal,sellerBreakdown};
 }
 
 function trendDate(catId,target){
-  const rs=ST.readings.filter(r=>r.catId===catId).sort((a,b)=>a.date.localeCompare(b.date));
-  if(rs.length<2)return null;
-  const last=rs.slice(-Math.min(3,rs.length));
+  // use all readings summed per date for this category
+  const cat=ST.categories.find(c=>c.id===catId);
+  const hasSellers=cat.sellers&&cat.sellers.length>0;
+  let points=[];
+
+  if(!hasSellers){
+    points=ST.readings.filter(r=>r.catId===catId&&!r.sellerId)
+      .sort((a,b)=>a.date.localeCompare(b.date))
+      .map(r=>({date:r.date,total:r.total}));
+  } else {
+    // group by date, sum sellers
+    const byDate={};
+    ST.readings.filter(r=>r.catId===catId&&r.sellerId).forEach(r=>{
+      byDate[r.date]=(byDate[r.date]||0)+r.total;
+    });
+    points=Object.entries(byDate).sort((a,b)=>a[0].localeCompare(b[0])).map(([date,total])=>({date,total}));
+  }
+  if(points.length<2)return null;
+  const last=points.slice(-Math.min(3,points.length));
   const days=diffD(last[0].date,last[last.length-1].date);
   if(days<=0)return null;
   const vel=(last[last.length-1].total-last[0].total)/days;
@@ -375,60 +512,108 @@ function trendDate(catId,target){
   return disp(fmt(proj));
 }
 
+/* ── DASHBOARD ─────────────────────────── */
 function renderDashboard(){
   const rv=document.getElementById('filter-range').value;
   document.getElementById('cf-from').style.display=rv==='custom'?'':'none';
   document.getElementById('cf-to').style.display=rv==='custom'?'':'none';
   const readings=getFilteredReadings();
   const cats=ST.categories;
+  const daysCats=cats.filter(c=>c.type!=='abbonamento');
+  const abbCats=cats.filter(c=>c.type==='abbonamento');
+
+  // preserve toggles
   const activeIds=new Set();
   document.querySelectorAll('.toggle-btn.on').forEach(b=>activeIds.add(b.dataset.id));
   if(!activeIds.size)cats.forEach(c=>activeIds.add(c.id));
+
   document.getElementById('cat-toggles').innerHTML=cats.map((c,i)=>{
     const on=activeIds.has(c.id);
-    return`<button class="toggle-btn ${on?'on':''}" data-id="${c.id}"
+    return`<button class="toggle-btn${on?' on':''}" data-id="${c.id}"
       style="${on?`background:${CC[i%8]};border-color:${CC[i%8]};color:#fff`:''}"
       onclick="toggleCat('${c.id}',this,${i})">${c.name}</button>`;
   }).join('');
-  let tNow=0,tDelta=0;
-  document.getElementById('wow-tbody').innerHTML=cats.map((c,i)=>{
-    const[lat,prv]=getLastTwo(c.id,readings);
-    if(!lat)return`<tr><td><div style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:${CC[i%8]}"></span>${c.name}</div></td><td colspan="7" class="text-muted text-sm">Nessuna rilevazione nel periodo</td></tr>`;
-    const delta=prv?lat.total-prv.total:null;
-    const dpct=(prv&&prv.total>0)?delta/prv.total*100:null;
-    const dd=prv?diffD(prv.date,lat.date):null;
-    const avgd=(dd&&dd>0&&delta!==null)?(delta/dd).toFixed(1):'–';
-    tNow+=lat.total;if(delta!==null)tDelta+=delta;
-    const td=c.target?trendDate(c.id,c.target):null;
-    return`<tr>
-      <td><div style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:${CC[i%8]}"></span>${c.name}</div></td>
-      <td>${disp(lat.date)}</td>
-      <td class="fw-600">${lat.total.toLocaleString('it-IT')}</td>
-      <td>${delta!==null?`<span class="badge ${delta>=0?'badge-g':'badge-r'}">${delta>=0?'+':''}${delta}</span>`:'–'}</td>
-      <td style="color:${dpct!==null?(dpct>=0?'var(--green)':'var(--red)'):'inherit'};font-weight:600">${dpct!==null?(dpct>=0?'+':'')+dpct.toFixed(1)+'%':'–'}</td>
-      <td class="text-sm">${avgd!=='–'?avgd+'/g':'–'}</td>
-      <td class="text-sm">${c.target?lat.total+'/'+c.target:'–'}</td>
-      <td class="text-sm">${td?(td==='raggiunto'?'<span class="badge badge-g">✓</span>':td):'–'}</td>
-    </tr>`;
-  }).join('');
+
+  let totalNow=0,totalDelta=0,totalAbb=0;
+
+  // render WoW table for a list of categories
+  function renderWoW(catList){
+    return catList.map((c,_i)=>{
+      const i=cats.indexOf(c);
+      const stats=getCatStats(c.id,readings);
+      const delta=stats.prevTotal?stats.latestTotal-stats.prevTotal:null;
+      const dpct=(delta!==null&&stats.prevTotal>0)?delta/stats.prevTotal*100:null;
+      const dd=(stats.latestDate&&stats.prevDate)?diffD(stats.prevDate,stats.latestDate):null;
+      const avgd=(dd&&dd>0&&delta!==null)?(delta/dd).toFixed(1):'–';
+      const td=c.target?trendDate(c.id,c.target):null;
+      totalNow+=stats.latestTotal;
+      if(delta!==null)totalDelta+=delta;
+      if(c.type==='abbonamento')totalAbb+=stats.latestTotal;
+
+      const mainRow=`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <span class="dot" style="background:${CC[i%8]}"></span>
+          <span class="fw-600">${c.name}</span>
+          <span class="tag ${c.type==='abbonamento'?'tag-abb':'tag-day'}">${c.type==='abbonamento'?'abbonamento':'giorno'}</span>
+          ${stats.sellerBreakdown?`<span class="text-muted text-sm">(${c.sellers.length} biglietterie)</span>`:''}
+        </div></td>
+        <td>${disp(stats.latestDate)}</td>
+        <td class="fw-600">${stats.latestTotal.toLocaleString('it-IT')}</td>
+        <td>${delta!==null?`<span class="badge ${delta>=0?'badge-g':'badge-r'}">${delta>=0?'+':''}${delta}</span>`:'–'}</td>
+        <td style="color:${dpct!==null?(dpct>=0?'var(--green)':'var(--red)'):'inherit'};font-weight:600">${dpct!==null?(dpct>=0?'+':'')+dpct.toFixed(1)+'%':'–'}</td>
+        <td class="text-sm">${avgd!=='–'?avgd+'/g':'–'}</td>
+        <td class="text-sm">${c.target?stats.latestTotal+'/'+c.target:'–'}</td>
+        <td class="text-sm">${td?(td==='raggiunto'?'<span class="badge badge-g">✓ Raggiunto</span>':td):'–'}</td>
+      </tr>`;
+
+      // seller sub-rows
+      const sellerRows=stats.sellerBreakdown?stats.sellerBreakdown.map(({seller,lat,prv})=>{
+        const sd=lat?lat.total:0;const spd=prv?prv.total:0;
+        const sdelta=prv?sd-spd:null;
+        return`<tr class="tr-seller">
+          <td>↳ ${seller.name}</td>
+          <td>${disp(lat?.date)}</td>
+          <td>${sd.toLocaleString('it-IT')}</td>
+          <td>${sdelta!==null?`<span style="color:${sdelta>=0?'var(--green)':'var(--red)'};font-size:.8rem">${sdelta>=0?'+':''}${sdelta}</span>`:'–'}</td>
+          <td colspan="4"></td>
+        </tr>`;
+      }).join(''):'';
+
+      return mainRow+sellerRows;
+    }).join('');
+  }
+
+  document.getElementById('days-tbody').innerHTML=renderWoW(daysCats);
+  const abbHtml=renderWoW(abbCats);
+  document.getElementById('abb-tbody').innerHTML=abbHtml;
+  document.getElementById('abb-card').style.display=abbCats.length?'':'none';
+
+  // KPIs
+  const dayTotal=totalNow-totalAbb;
   document.getElementById('kpi-row').innerHTML=`
-    <div class="kpi-card"><div class="kpi-label">Totale biglietti</div><div class="kpi-value">${tNow.toLocaleString('it-IT')}</div><div class="kpi-sub">Somma ultime rilevazioni</div></div>
-    <div class="kpi-card"><div class="kpi-label">Crescita vs precedente</div><div class="kpi-value" style="color:${tDelta>=0?'var(--green)':'var(--red)'}">${tDelta>=0?'+':''}${tDelta.toLocaleString('it-IT')}</div><div class="kpi-sub">Delta assoluto</div></div>
-    <div class="kpi-card"><div class="kpi-label">Categorie</div><div class="kpi-value">${cats.length}</div><div class="kpi-sub">In questo festival</div></div>
-    <div class="kpi-card"><div class="kpi-label">Rilevazioni totali</div><div class="kpi-value">${ST.readings.length}</div><div class="kpi-sub">Storico completo</div></div>`;
-  const progItems=cats.filter(c=>c.target>0).map((c,i)=>{
-    const[lat]=getLastTwo(c.id,readings);const cur=lat?lat.total:0;
-    const pct=Math.min(100,Math.round(cur/c.target*100));
+    <div class="kpi-card"><div class="kpi-label">Totale biglietti</div><div class="kpi-value">${totalNow.toLocaleString('it-IT')}</div><div class="kpi-sub">Tutti i tipi</div></div>
+    <div class="kpi-card"><div class="kpi-label">Solo giorni</div><div class="kpi-value">${dayTotal.toLocaleString('it-IT')}</div><div class="kpi-sub">Giornalieri</div></div>
+    <div class="kpi-card"><div class="kpi-label">Abbonamenti</div><div class="kpi-value" style="color:#a78bfa">${totalAbb.toLocaleString('it-IT')}</div><div class="kpi-sub">Multi-giorno</div></div>
+    <div class="kpi-card"><div class="kpi-label">Crescita vs prec.</div><div class="kpi-value" style="color:${totalDelta>=0?'var(--green)':'var(--red)'}">${totalDelta>=0?'+':''}${totalDelta.toLocaleString('it-IT')}</div><div class="kpi-sub">Delta assoluto</div></div>`;
+
+  // Progress
+  const progItems=cats.filter(c=>c.target>0).map((c,_i)=>{
+    const i=cats.indexOf(c);
+    const stats=getCatStats(c.id,readings);
+    const pct=Math.min(100,Math.round(stats.latestTotal/c.target*100));
     const td=trendDate(c.id,c.target);
     return`<div style="margin-bottom:16px">
-      <div class="pb-labels"><span style="color:${CC[i%8]};font-weight:600">${c.name}</span>
-      <span>${cur} / ${c.target} · ${pct}%${td&&td!=='raggiunto'?' · Trend: '+td:td==='raggiunto'?' · ✓ Raggiunto':''}</span></div>
+      <div class="pb-labels">
+        <span style="color:${CC[i%8]};font-weight:600">${c.name}</span>
+        <span>${stats.latestTotal} / ${c.target} · ${pct}%${td&&td!=='raggiunto'?' · Trend: '+td:td==='raggiunto'?' · ✓ Raggiunto':''}</span>
+      </div>
       <div class="pb-outer"><div class="pb-inner" style="width:${pct}%;background:${CC[i%8]}"></div></div>
     </div>`;
   });
   const pc=document.getElementById('progress-card');
   pc.style.display=progItems.length?'':'none';
   document.getElementById('progress-list').innerHTML=progItems.join('');
+
   renderChart(readings,activeIds);
 }
 
@@ -441,15 +626,35 @@ function toggleCat(id,btn,ci){
 }
 
 function renderChart(readings,activeIds){
+  // For each active category, build a time series of totals (summing sellers per date)
   const allDates=new Set();
-  ST.categories.forEach(c=>{if(!activeIds.has(c.id))return;readings.filter(r=>r.catId===c.id).forEach(r=>allDates.add(r.date));});
-  const labels=[...allDates].sort();
-  const datasets=ST.categories.filter(c=>activeIds.has(c.id)).map((c,i)=>{
-    const map={};readings.filter(r=>r.catId===c.id).forEach(r=>map[r.date]=r.total);
-    return{label:c.name,data:labels.map(d=>map[d]!==undefined?map[d]:null),
-      borderColor:CC[i%8],backgroundColor:CC[i%8]+'20',fill:false,tension:.35,
-      spanGaps:false,pointRadius:4,pointHoverRadius:6,borderWidth:2};
+  ST.categories.forEach(c=>{
+    if(!activeIds.has(c.id))return;
+    readings.filter(r=>r.catId===c.id).forEach(r=>allDates.add(r.date));
   });
+  const labels=[...allDates].sort();
+
+  const datasets=ST.categories.filter(c=>activeIds.has(c.id)).map((c,_i)=>{
+    const i=ST.categories.indexOf(c);
+    const hasSellers=c.sellers&&c.sellers.length>0;
+    // aggregate totals per date
+    const totByDate={};
+    if(!hasSellers){
+      readings.filter(r=>r.catId===c.id&&!r.sellerId).forEach(r=>totByDate[r.date]=r.total);
+    } else {
+      readings.filter(r=>r.catId===c.id&&r.sellerId).forEach(r=>{
+        totByDate[r.date]=(totByDate[r.date]||0)+r.total;
+      });
+    }
+    return{
+      label:c.name+(c.type==='abbonamento'?' (abb.)':''),
+      data:labels.map(d=>totByDate[d]!==undefined?totByDate[d]:null),
+      borderColor:CC[i%8],backgroundColor:CC[i%8]+'20',
+      fill:false,tension:.35,spanGaps:false,pointRadius:4,pointHoverRadius:6,borderWidth:2,
+      borderDash:c.type==='abbonamento'?[5,3]:[]
+    };
+  });
+
   if(chartObj)chartObj.destroy();
   chartObj=new Chart(document.getElementById('mainChart').getContext('2d'),{
     type:'line',data:{labels:labels.map(disp),datasets},
@@ -461,49 +666,95 @@ function renderChart(readings,activeIds){
   });
 }
 
+/* ── ADD READING ─────────────────────────── */
 function populateCatSelects(){
   document.getElementById('new-cat').innerHTML=ST.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   document.getElementById('hist-cat-filter').innerHTML='<option value="all">Tutte</option>'+ST.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  updateAddForm();
+}
+
+function updateAddForm(){
+  const catId=document.getElementById('new-cat').value;
+  const cat=ST.categories.find(c=>c.id===catId);
+  const sellerField=document.getElementById('seller-field');
+  const sellerSel=document.getElementById('new-seller');
+  if(cat&&cat.sellers&&cat.sellers.length>0){
+    sellerField.style.display='';
+    sellerSel.innerHTML=cat.sellers.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  } else {
+    sellerField.style.display='none';
+  }
   updateAddPreview();
 }
 
 function updateAddPreview(){
-  const cid=document.getElementById('new-cat').value;
+  const catId=document.getElementById('new-cat').value;
+  const sellerId=document.getElementById('new-seller').value||null;
   const card=document.getElementById('add-preview-card');
-  if(!cid){card.style.display='none';return;}
-  const rs=ST.readings.filter(r=>r.catId===cid).sort((a,b)=>a.date.localeCompare(b.date));
-  if(!rs.length){card.style.display='none';return;}
-  card.style.display='';
-  const last=rs[rs.length-1];const ci=ST.categories.findIndex(c=>c.id===cid);
-  document.getElementById('add-preview').innerHTML=`
-    <div style="display:flex;gap:24px;flex-wrap:wrap">
-      <div><div class="kpi-label">Ultima data</div><div class="fw-600" style="color:${CC[ci%8]}">${disp(last.date)}</div></div>
-      <div><div class="kpi-label">Totale cumulativo</div><div class="fw-600">${last.total.toLocaleString('it-IT')}</div></div>
-      ${last.note?`<div><div class="kpi-label">Nota</div><div class="text-sm">${last.note}</div></div>`:''}
-    </div>`;
+  const cat=ST.categories.find(c=>c.id===catId);
+  if(!cat){card.style.display='none';return;}
+  const hasSellers=cat.sellers&&cat.sellers.length>0;
+  const ci=ST.categories.indexOf(cat);
+
+  if(hasSellers&&sellerId){
+    const rs=ST.readings.filter(r=>r.catId===catId&&r.sellerId===sellerId).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!rs.length){card.style.display='none';return;}
+    card.style.display='';
+    const last=rs[rs.length-1];
+    const sellerName=cat.sellers.find(s=>s.id===sellerId)?.name||'';
+    document.getElementById('add-preview').innerHTML=`
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div><div class="kpi-label">Biglietteria</div><div class="fw-600" style="color:${CC[ci%8]}">${sellerName}</div></div>
+        <div><div class="kpi-label">Ultima data</div><div class="fw-600">${disp(last.date)}</div></div>
+        <div><div class="kpi-label">Totale cumulativo</div><div class="fw-600">${last.total.toLocaleString('it-IT')}</div></div>
+        ${last.note?`<div><div class="kpi-label">Nota</div><div class="text-sm">${last.note}</div></div>`:''}
+      </div>`;
+  } else if(!hasSellers){
+    const rs=ST.readings.filter(r=>r.catId===catId&&!r.sellerId).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!rs.length){card.style.display='none';return;}
+    card.style.display='';
+    const last=rs[rs.length-1];
+    document.getElementById('add-preview').innerHTML=`
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div><div class="kpi-label">Ultima data</div><div class="fw-600" style="color:${CC[ci%8]}">${disp(last.date)}</div></div>
+        <div><div class="kpi-label">Totale cumulativo</div><div class="fw-600">${last.total.toLocaleString('it-IT')}</div></div>
+        ${last.note?`<div><div class="kpi-label">Nota</div><div class="text-sm">${last.note}</div></div>`:''}
+      </div>`;
+  } else {card.style.display='none';}
 }
+
+document.getElementById('new-seller').addEventListener('change',updateAddPreview);
 
 function addReading(){
   const date=document.getElementById('new-date').value;
   const catId=document.getElementById('new-cat').value;
   const tv=document.getElementById('new-total').value;
   const note=document.getElementById('new-note').value.trim();
+  const cat=ST.categories.find(c=>c.id===catId);
+  const hasSellers=cat&&cat.sellers&&cat.sellers.length>0;
+  const sellerId=hasSellers?document.getElementById('new-seller').value:null;
+
   if(!date){toast('Inserisci una data','error');return;}
   if(!catId){toast('Seleziona una categoria','error');return;}
   if(tv===''){toast('Inserisci il numero di biglietti','error');return;}
   const total=parseInt(tv);
   if(isNaN(total)||total<0){toast('Valore non valido (≥ 0)','error');return;}
-  const last=ST.readings.filter(r=>r.catId===catId).sort((a,b)=>a.date.localeCompare(b.date)).slice(-1)[0];
+
+  const prevReadings=ST.readings.filter(r=>r.catId===catId&&(sellerId?r.sellerId===sellerId:!r.sellerId))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  const last=prevReadings[prevReadings.length-1]||null;
+
   const doAdd=()=>{
-    ST.readings.push({id:uid(),fid:ST.festivals[0]?.id||'',catId,date,total,note});
+    ST.readings.push({id:uid(),fid:ST.festivals[0]?.id||'',catId,sellerId,date,total,note});
     save();document.getElementById('new-total').value='';document.getElementById('new-note').value='';
     toast('Rilevazione aggiunta ✓','success');updateAddPreview();renderDashboard();
   };
   if(last&&total<last.total){
     openModal('⚠️ Valore inferiore al precedente',`Ultimo valore: ${last.total} (${disp(last.date)}). Stai inserendo ${total}. Procedere?`,doAdd,'Sì, inserisci');
-  }else doAdd();
+  } else doAdd();
 }
 
+/* ── HISTORY ─────────────────────────────── */
 function renderHistory(){
   const cf=document.getElementById('hist-cat-filter').value;
   const so=document.getElementById('hist-sort').value;
@@ -513,10 +764,12 @@ function renderHistory(){
   const list=document.getElementById('readings-list');
   if(!rs.length){list.innerHTML='<p class="text-muted text-sm" style="padding:12px">Nessuna rilevazione.</p>';return;}
   list.innerHTML=rs.map(r=>{
-    const cat=ST.categories.find(c=>c.id===r.catId);const ci=ST.categories.indexOf(cat);
+    const cat=ST.categories.find(c=>c.id===r.catId);
+    const ci=ST.categories.indexOf(cat);
+    const sellerName=r.sellerId&&cat?cat.sellers?.find(s=>s.id===r.sellerId)?.name:'';
     return`<div class="ri">
       <div class="ri-main">
-        <div class="ri-cat" style="color:${CC[ci%8]}">${cat?cat.name:'Categoria eliminata'}</div>
+        <div class="ri-cat" style="color:${CC[ci%8]}">${cat?cat.name:'Categoria eliminata'}${sellerName?` <span class="text-muted text-sm">· ${sellerName}</span>`:''}</div>
         <div class="ri-meta">${disp(r.date)}${r.note?' · '+r.note:''}</div>
       </div>
       <div class="ri-val">${r.total.toLocaleString('it-IT')}</div>
@@ -528,6 +781,7 @@ function renderHistory(){
   }).join('');
 }
 
+/* ── EDIT / DELETE ─────────────────────── */
 function openEditModal(id){
   const r=ST.readings.find(r=>r.id===id);if(!r)return;
   document.getElementById('edit-id').value=r.id;
@@ -554,18 +808,60 @@ function confirmDelete(id){
   },'Elimina');
 }
 
+/* ── SETTINGS ─────────────────────────── */
+let newSellerCount=0;
+
+function addSellerField(){
+  const list=document.getElementById('new-sellers-list');
+  if(list.children.length>=3){toast('Massimo 3 biglietterie','warn');return;}
+  const id='ns_'+newSellerCount++;
+  const div=document.createElement('div');
+  div.style='display:flex;gap:8px;align-items:center';
+  div.innerHTML=`<input type="text" id="${id}" placeholder="Nome biglietteria" style="flex:1">
+    <button class="btn-danger btn-sm" onclick="this.parentNode.remove()">✕</button>`;
+  list.appendChild(div);
+}
+
+function addCategory(){
+  const name=document.getElementById('new-cat-name').value.trim();
+  const target=parseInt(document.getElementById('new-cat-target').value)||0;
+  const type=document.querySelector('input[name="new-cat-type"]:checked').value;
+  if(!name){toast('Inserisci il nome','error');return;}
+  const sellerInputs=document.querySelectorAll('#new-sellers-list input[type=text]');
+  const sellers=[];
+  sellerInputs.forEach(inp=>{
+    const n=inp.value.trim();if(n)sellers.push({id:uid(),name:n});
+  });
+  if(sellers.length>3){toast('Massimo 3 biglietterie','warn');return;}
+  ST.categories.push({id:uid(),fid:ST.festivals[0]?.id||'',name,target,type,sellers});
+  save();
+  document.getElementById('new-cat-name').value='';document.getElementById('new-cat-target').value='';
+  document.getElementById('new-sellers-list').innerHTML='';
+  document.querySelector('input[name="new-cat-type"][value="day"]').checked=true;
+  renderSettingsForm();populateCatSelects();toast('Categoria aggiunta ✓','success');
+}
+
 function renderSettingsForm(){
   const f=ST.festivals[0];
   if(f){document.getElementById('sett-name').value=f.name;document.getElementById('sett-start').value=f.dateStart||'';document.getElementById('sett-end').value=f.dateEnd||'';}
   document.getElementById('cat-list').innerHTML=ST.categories.map((c,i)=>`
     <div class="cat-item">
-      <span class="dot" style="background:${CC[i%8]}"></span>
-      <span class="cat-name">${c.name}</span>
-      <span class="cat-target">${c.target?'🎯 '+c.target:'no target'}</span>
-      <button class="btn-ghost btn-sm" onclick="editCatTarget('${c.id}')">✏️</button>
-      <button class="btn-danger btn-sm" onclick="confirmDeleteCat('${c.id}')">🗑</button>
+      <div class="cat-item-header">
+        <span class="dot" style="background:${CC[i%8]}"></span>
+        <span class="cat-name">${c.name}</span>
+        <span class="tag ${c.type==='abbonamento'?'tag-abb':'tag-day'}">${c.type==='abbonamento'?'abbonamento':'giorno'}</span>
+        ${c.target?`<span class="cat-target">🎯 ${c.target}</span>`:''}
+        <button class="btn-ghost btn-sm" onclick="editCatTarget('${c.id}')">✏️ target</button>
+        <button class="btn-ghost btn-sm" onclick="openSellerEditModal('${c.id}')">🏪 biglietterie</button>
+        <button class="btn-danger btn-sm" onclick="confirmDeleteCat('${c.id}')">🗑</button>
+      </div>
+      ${c.sellers&&c.sellers.length?`
+        <div class="sellers-list">
+          ${c.sellers.map(s=>`<div class="seller-row"><span>🏪 ${s.name}</span></div>`).join('')}
+        </div>`:''}
     </div>`).join('')||'<p class="text-muted text-sm">Nessuna categoria.</p>';
 }
+
 function saveFestivalSettings(){
   const name=document.getElementById('sett-name').value.trim();
   if(!name){toast('Inserisci il nome','error');return;}
@@ -573,20 +869,14 @@ function saveFestivalSettings(){
   ST.festivals[0].name=name;ST.festivals[0].dateStart=document.getElementById('sett-start').value;ST.festivals[0].dateEnd=document.getElementById('sett-end').value;
   save();toast('Salvato ✓','success');
 }
-function addCategory(){
-  const name=document.getElementById('new-cat-name').value.trim();
-  const target=parseInt(document.getElementById('new-cat-target').value)||0;
-  if(!name){toast('Inserisci il nome','error');return;}
-  ST.categories.push({id:uid(),fid:ST.festivals[0]?.id||'',name,target});
-  save();document.getElementById('new-cat-name').value='';document.getElementById('new-cat-target').value='';
-  renderSettingsForm();populateCatSelects();toast('Categoria aggiunta ✓','success');
-}
+
 function editCatTarget(id){
   const c=ST.categories.find(c=>c.id===id);if(!c)return;
   const v=prompt(`Obiettivo per "${c.name}":`,c.target||'');
   if(v===null)return;c.target=parseInt(v)||0;save();
   renderSettingsForm();renderDashboard();toast('Obiettivo aggiornato ✓','success');
 }
+
 function confirmDeleteCat(id){
   const c=ST.categories.find(c=>c.id===id);
   const n=ST.readings.filter(r=>r.catId===id).length;
@@ -596,6 +886,55 @@ function confirmDeleteCat(id){
     save();renderSettingsForm();populateCatSelects();renderDashboard();renderHistory();toast('Eliminata','success');
   },'Elimina');
 }
+
+/* ── SELLER EDIT MODAL ─────────────────── */
+function openSellerEditModal(catId){
+  editingCatId=catId;
+  const cat=ST.categories.find(c=>c.id===catId);
+  document.getElementById('seller-edit-cat-name').textContent=cat.name;
+  renderSellerEditList();
+  document.getElementById('seller-edit-overlay').classList.remove('hidden');
+}
+
+function renderSellerEditList(){
+  const cat=ST.categories.find(c=>c.id===editingCatId);
+  document.getElementById('seller-edit-list').innerHTML=cat.sellers.map(s=>`
+    <div style="display:flex;align-items:center;gap:8px" id="sr_${s.id}">
+      <input type="text" value="${s.name}" id="sn_${s.id}" style="flex:1">
+      <button class="btn-danger btn-sm" onclick="removeSeller('${s.id}')">✕</button>
+    </div>`).join('');
+  document.getElementById('seller-edit-add').style.display=cat.sellers.length>=3?'none':'';
+}
+
+function addSellerToExisting(){
+  const cat=ST.categories.find(c=>c.id===editingCatId);
+  if(cat.sellers.length>=3){toast('Massimo 3 biglietterie','warn');return;}
+  cat.sellers.push({id:uid(),name:'Nuova biglietteria'});
+  save();renderSellerEditList();populateCatSelects();
+}
+
+function removeSeller(sellerId){
+  const cat=ST.categories.find(c=>c.id===editingCatId);
+  const relCount=ST.readings.filter(r=>r.catId===editingCatId&&r.sellerId===sellerId).length;
+  if(relCount>0){
+    if(!confirm(`Rimuovere questa biglietteria? Eliminerà anche ${relCount} rilevazioni associate.`))return;
+    ST.readings=ST.readings.filter(r=>!(r.catId===editingCatId&&r.sellerId===sellerId));
+  }
+  cat.sellers=cat.sellers.filter(s=>s.id!==sellerId);
+  save();renderSellerEditList();populateCatSelects();
+}
+
+function saveSellerEdits(){
+  const cat=ST.categories.find(c=>c.id===editingCatId);
+  cat.sellers.forEach(s=>{
+    const inp=document.getElementById('sn_'+s.id);
+    if(inp)s.name=inp.value.trim()||s.name;
+  });
+  save();renderSettingsForm();populateCatSelects();renderDashboard();
+  document.getElementById('seller-edit-overlay').classList.add('hidden');
+  toast('Biglietterie aggiornate ✓','success');
+}
+
 function changePin(){
   const old=document.getElementById('sett-old-pin').value;
   const n1=document.getElementById('sett-new-pin').value;
@@ -607,12 +946,14 @@ function changePin(){
   document.getElementById('sett-old-pin').value='';document.getElementById('sett-new-pin').value='';document.getElementById('sett-new-pin2').value='';
   toast('PIN aggiornato ✓','success');
 }
+
 function confirmReset(){
   openModal('⚠️ Reset completo','Tutti i dati verranno eliminati. Esporta prima un backup.',()=>{
     localStorage.removeItem(SK);toast('Reset eseguito. Ricarico...','warn');setTimeout(()=>location.reload(),1500);
   },'Sì, elimina tutto');
 }
 
+/* ── EXPORT / IMPORT ─────────────────────── */
 function exportData(){
   const name=(ST.festivals[0]?.name||'data').replace(/\s+/g,'_');
   const blob=new Blob([JSON.stringify(ST,null,2)],{type:'application/json'});
@@ -637,6 +978,7 @@ function importData(e){
   reader.readAsText(file);e.target.value='';
 }
 
+/* ── MODALS ─────────────────────────────── */
 function openModal(title,body,cb,lbl='Conferma'){
   document.getElementById('modal-title').textContent=title;
   document.getElementById('modal-body').textContent=body;
@@ -647,13 +989,16 @@ function closeModal(){document.getElementById('modal-overlay').classList.add('hi
 document.getElementById('modal-confirm-btn').addEventListener('click',()=>{if(pendingAction)pendingAction();closeModal();});
 document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 document.getElementById('edit-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeEditModal();});
+document.getElementById('seller-edit-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)saveSellerEdits();});
 
+/* ── TOAST ─────────────────────────────── */
 function toast(msg,type='success'){
   const c=document.getElementById('toasts');const el=document.createElement('div');
   el.className=`toast ${type}`;el.textContent=msg;c.appendChild(el);
   setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3000);
 }
 
+/* ── BOOT ─────────────────────────────── */
 load();
 </script>
 </body>
